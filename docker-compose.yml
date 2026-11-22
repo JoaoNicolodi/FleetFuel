@@ -1,0 +1,75 @@
+# FleetFuel — ecossistema completo
+# Subir tudo:  docker compose up --build
+# Portal:      http://localhost:8080
+# RabbitMQ UI: http://localhost:15672  (guest/guest)
+
+services:
+  # ---------- Infra de dados (um banco por serviço) ----------
+  postgres-core:
+    image: postgres:16-alpine
+    environment: { POSTGRES_USER: fleetfuel, POSTGRES_PASSWORD: fleetfuel, POSTGRES_DB: core }
+    ports: ["5432:5432"]
+    volumes: [core-db:/var/lib/postgresql/data]
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U fleetfuel -d core"], interval: 3s, retries: 20 }
+
+  postgres-audit:
+    image: postgres:16-alpine
+    environment: { POSTGRES_USER: fleetfuel, POSTGRES_PASSWORD: fleetfuel, POSTGRES_DB: audit }
+    ports: ["5433:5432"]
+    volumes: [audit-db:/var/lib/postgresql/data]
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U fleetfuel -d audit"], interval: 3s, retries: 20 }
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+    healthcheck: { test: ["CMD", "redis-cli", "ping"], interval: 3s, retries: 20 }
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    ports: ["5672:5672", "15672:15672"]
+    healthcheck: { test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"], interval: 5s, retries: 30 }
+
+  # ---------- Microsserviços ----------
+  core-service:
+    build: ./services/core-service
+    environment:
+      DATABASE_URL: postgres://fleetfuel:fleetfuel@postgres-core:5432/core
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      PHOTOS_DIR: /data/photos
+    volumes: [photos:/data/photos]
+    depends_on:
+      postgres-core: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+
+  live-service:
+    build: ./services/live-service
+    environment:
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      redis: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+
+  audit-service:
+    build: ./services/audit-service
+    environment:
+      DATABASE_URL: postgres://fleetfuel:fleetfuel@postgres-audit:5432/audit
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      postgres-audit: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+
+  # ---------- Borda ----------
+  web:
+    build: ./web
+
+  gateway:
+    image: nginx:1.27-alpine
+    volumes: [./gateway/nginx.conf:/etc/nginx/nginx.conf:ro]
+    ports: ["8080:80"]
+    depends_on: [core-service, live-service, audit-service, web]
+
+volumes:
+  core-db:
+  audit-db:
+  photos:

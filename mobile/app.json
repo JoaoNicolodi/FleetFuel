@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "FleetFuel Motorista",
+    "slug": "fleetfuel-motorista",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSCameraUsageDescription": "A câmera é usada para fotografar o hodômetro no momento do abastecimento.",
+        "NSLocationWhenInUseUsageDescription": "A localização registra onde o abastecimento aconteceu e mostra o veículo no painel da gestão."
+      }
+    },
+    "android": {
+      "package": "br.gov.fleetfuel.motorista",
+      "permissions": [
+        "CAMERA",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "VIBRATE"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "A câmera é usada para fotografar o hodômetro."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "A localização registra onde o abastecimento aconteceu."
+        }
+      ],
+      "expo-sqlite",
+      "expo-asset"
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "fleetfuel",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FleetFuel — Gestão de Abastecimento de Frotas Públicas (ecossistema distribuído)",
+  "scripts": {
+    "install:all": "node scripts/install-all.mjs",
+    "test": "npm --prefix services/core-service test && npm --prefix services/live-service test && npm --prefix services/audit-service test && npm --prefix mobile test",
+    "check:core-purity": "node scripts/check-core-purity.mjs services/core-service/src/core services/live-service/src/core services/audit-service/src/core",
+    "seed": "node scripts/seed.mjs",
+    "attack": "node scripts/concurrency-attack.mjs"
+  }
+}

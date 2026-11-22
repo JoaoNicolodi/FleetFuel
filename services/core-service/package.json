@@ -1,0 +1,28 @@
+{
+  "name": "@fleetfuel/core-service",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Serviço A (Core/Transacional): veículos, cotas mensais e abastecimentos sob alta concorrência",
+  "main": "dist/main.js",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "build": "tsc -p tsconfig.build.json && cp src/infra/database/postgres/schema.sql dist/infra/database/postgres/",
+    "start": "node dist/main.js",
+    "test": "tsx --test \"tests/*.test.ts\"",
+    "typecheck": "tsc --noEmit",
+    "check:core-purity": "node ../../scripts/check-core-purity.mjs src/core"
+  },
+  "dependencies": {
+    "@fastify/cors": "^10.0.1",
+    "amqplib": "^0.10.4",
+    "fastify": "^5.1.0",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.5",
+    "@types/node": "^22.10.0",
+    "@types/pg": "^8.11.10",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
